@@ -121,10 +121,9 @@ figma.ui.onmessage = ({ type, count = 1.5 }) => {
           text.name = text.characters
         }
 
-        const fontSize = kHeight * multipliers[key] * sizeCoeff
+        const fontSize = Math.round(kHeight * multipliers[key] * sizeCoeff)
         text.fontSize = fontSize
         text.lineHeight = { value: 100, unit: "PERCENT" }
-        // place h1 on top of node offset by margin
         text.x = margin
         text.y = margin - 0.1458264599 * fontSize + offset
         offset = text.y + text.height
