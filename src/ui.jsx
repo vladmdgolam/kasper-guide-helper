@@ -32,7 +32,10 @@ function App() {
 
   const onCreate = () => {
     const count = Number(value)
-    parent.postMessage({ pluginMessage: { type: "apply-guide", count } }, "*")
+    parent.postMessage(
+      { pluginMessage: { type: "apply-guide", count, closest } },
+      "*"
+    )
   }
 
   const onCancel = () => {

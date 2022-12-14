@@ -1,12 +1,23 @@
 import logo from "./logo.svg"
-import { multipliers, sizeCoeff, order, fractions } from "./constants"
+import {
+  multipliers,
+  defaultSettings,
+  order,
+  fractions,
+  lineHeightCoeff,
+  monkeyMarginCoeff,
+} from "./constants"
 import { closestFraction } from "./helpers"
+
+const { minBaseText, font } = defaultSettings
+
+const findLineHeight = (fontSize, baseHeight) => {
+  return baseHeight * Math.ceil(fontSize / baseHeight)
+}
 
 figma.showUI(__html__, { themeColors: true, height: 300 })
 
-export const defaultFont = { family: "Roboto", style: "Regular" }
-
-figma.ui.onmessage = ({ type, count = 1.5 }) => {
+figma.ui.onmessage = ({ type, count = 1.5, closest = "" }) => {
   if (type === "start") {
     // find the aspect ratio of the selected node
     if (figma.currentPage.selection.length === 0) {
@@ -33,7 +44,8 @@ figma.ui.onmessage = ({ type, count = 1.5 }) => {
     const logoWidth = width / count
 
     const logoNodes = []
-    for (let i = 0; i < Math.ceil(count); i++) {
+    // for (let i = 0; i < Math.ceil(count); i++) {
+    for (let i = 0; i < 1; i++) {
       const logoNode = figma.createNodeFromSvg(logo)
       node.appendChild(logoNode)
       const height = logoNode.height * (logoWidth / logoNode.width)
@@ -44,7 +56,7 @@ figma.ui.onmessage = ({ type, count = 1.5 }) => {
       logoNodes.push(logoNode)
     }
 
-    const logoGroup = figma.group(logoNodes, figma.currentPage)
+    const logoGroup = figma.group(logoNodes, node)
     for (let i = 0; i < logoNodes.length; i++) {
       const logoNode = logoNodes[i]
       figma.ungroup(logoNode)
@@ -55,16 +67,17 @@ figma.ui.onmessage = ({ type, count = 1.5 }) => {
     const k = logoGroup.findOne((node) => node.name === "horizontal-margin")
     const [kHeight, margin] = [k.height, k.width] // base module
 
-    // draw grid
-
+    // Draw Grid
     // draw vertical lines
     // draw a vertical line from top to bottom
     // with x position equal to margin
+
+    const scaledMargin = margin * multipliers.margin
     const left = figma.createLine()
     node.appendChild(left)
     left.name = "vertical-line"
     left.rotation = -90
-    left.x = margin
+    left.x = scaledMargin
     left.y = 0
     left.resize(height, 0)
     left.strokes = [{ type: "SOLID", color: { r: 0, g: 0, b: 0 } }]
@@ -74,7 +87,7 @@ figma.ui.onmessage = ({ type, count = 1.5 }) => {
     node.appendChild(right)
     right.name = "vertical-line"
     right.rotation = -90
-    right.x = width - margin
+    right.x = width - scaledMargin
     right.y = 0
     right.resize(height, 0)
     right.strokes = [{ type: "SOLID", color: { r: 0, g: 0, b: 0 } }]
@@ -87,7 +100,7 @@ figma.ui.onmessage = ({ type, count = 1.5 }) => {
     node.appendChild(top)
     top.name = "horizontal-line"
     top.x = 0
-    top.y = margin
+    top.y = scaledMargin
     top.resize(width, 0)
     top.strokes = [{ type: "SOLID", color: { r: 0, g: 0, b: 0 } }]
     top.strokeWeight = 0.25
@@ -96,17 +109,38 @@ figma.ui.onmessage = ({ type, count = 1.5 }) => {
     node.appendChild(bottom)
     bottom.name = "horizontal-line"
     bottom.x = 0
-    bottom.y = height - margin
+    bottom.y = height - scaledMargin
     bottom.resize(width, 0)
     bottom.strokes = [{ type: "SOLID", color: { r: 0, g: 0, b: 0 } }]
     bottom.strokeWeight = 0.25
 
-    // draw text
-    const font = { family: "Kaspersky Sans Display", style: "Medium" }
+    // move the logo group so that
+    // the k right side is aligned with the left line
+    logoGroup.x = scaledMargin - k.x - k.width
+    const verticalK = logoGroup.findOne(
+      (node) => node.name === "vertical-margin"
+    )
+
+    // move the logo group so that
+    // the vertical k top side is aligned with the bottom line
+    // logoGroup.y -= verticalK.y + verticalK.height / 2 - (height - scaledMargin)
+    logoGroup.y -= verticalK.y - (height - scaledMargin)
+
+    /* Draw Text */
+
+    // make font not less than minBaseText
+    const baseFontSize = Math.max(
+      Math.round(kHeight * multipliers.baseText),
+      minBaseText
+    )
+    const coeff = minBaseText / Math.round(kHeight * multipliers.baseText)
+
+    // calculate line height
+    const baseHeight = baseFontSize * lineHeightCoeff
 
     figma.loadFontAsync(font).then(() => {
-      let offset = 0
-      order.forEach((key) => {
+      let offset = scaledMargin
+      order.forEach((key, index) => {
         const text = figma.createText()
         text.fontName = font
         node.appendChild(text)
@@ -121,19 +155,44 @@ figma.ui.onmessage = ({ type, count = 1.5 }) => {
           text.name = text.characters
         }
 
-        const fontSize = Math.round(kHeight * multipliers[key] * sizeCoeff)
+        const fontSize = Math.round(kHeight * multipliers[key] * coeff)
         text.fontSize = fontSize
-        text.lineHeight = { value: 100, unit: "PERCENT" }
-        text.x = margin
-        text.y = margin - 0.1458264599 * fontSize + offset
-        offset = text.y + text.height
+        const lineHeight = findLineHeight(fontSize, baseHeight)
+        text.lineHeight = {
+          value: lineHeight,
+          unit: "PIXELS",
+        }
+
+        // Create text style
+        const style = figma.createTextStyle()
+        style.fontName = font
+        style.name = `${closest ? closest + " " : ""}` + text.characters
+        style.fontSize = fontSize
+        style.lineHeight = text.lineHeight
+        text.textStyleId = style.id
+
+        text.x = scaledMargin
+        if (offset === scaledMargin) {
+          const clone = text.clone()
+          const geometry = figma.flatten([clone])
+          const { y } = geometry
+          const dafuq = y - text.y
+          text.y = offset - dafuq
+          geometry.remove()
+        } else {
+          text.y = offset
+        }
+
+        // if bottom of text is below top of the logo, remove it
+        if (text.y + text.height > logoGroup.y) {
+          text.remove()
+        } else {
+          offset = text.y + text.height
+        }
       })
       figma.closePlugin()
     })
 
-    //   figma.currentPage.selection = [text]
-    //   figma.viewport.scrollAndZoomIntoView([text])
-  } else if (type === "cancel") {
-    figma.closePlugin()
-  }
+    figma.viewport.scrollAndZoomIntoView([node])
+  } else if (type === "cancel") figma.closePlugin()
 }

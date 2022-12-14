@@ -7,13 +7,19 @@ export const multipliers = {
   h3: phi,
   h2: phi ** 2,
   h1: phi ** 3,
+  margin: 1.5
+}
+
+export const monkeyMarginCoeff = -0.182945154
+
+export const lineHeightCoeff = 1.2
+
+export const defaultSettings = {
+  minBaseText: 8,
+  font: { family: "Kaspersky Sans Display", style: "Medium" },
 }
 
 export const order = ["h1", "h2", "h3", "h4", "teaser", "baseText"]
-
-export const sizeCoeff = 1.4116749332
-
-export const moduleDistribs = []
 
 export const fractions = [
   ["6:3", 5],
