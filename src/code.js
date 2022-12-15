@@ -133,7 +133,10 @@ figma.ui.onmessage = ({ type, count = 1.5, closest = "" }) => {
       Math.round(kHeight * multipliers.baseText),
       minBaseText
     )
-    const coeff = minBaseText / Math.round(kHeight * multipliers.baseText)
+    const coeff = Math.max(
+      1,
+      minBaseText / Math.round(kHeight * multipliers.baseText)
+    )
 
     // calculate line height
     const baseHeight = Math.ceil(baseFontSize * lineHeightCoeff)
