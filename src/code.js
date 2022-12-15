@@ -136,11 +136,11 @@ figma.ui.onmessage = ({ type, count = 1.5, closest = "" }) => {
     const coeff = minBaseText / Math.round(kHeight * multipliers.baseText)
 
     // calculate line height
-    const baseHeight = baseFontSize * lineHeightCoeff
+    const baseHeight = Math.ceil(baseFontSize * lineHeightCoeff)
 
     figma.loadFontAsync(font).then(() => {
       let offset = scaledMargin
-      order.forEach((key, index) => {
+      order.forEach((key) => {
         const text = figma.createText()
         text.fontName = font
         node.appendChild(text)
