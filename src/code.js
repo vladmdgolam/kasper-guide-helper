@@ -142,7 +142,26 @@ figma.ui.onmessage = ({ type, count = 1.5, closest = "" }) => {
     const baseHeight = Math.ceil(baseFontSize * lineHeightCoeff)
 
     const drawStuff = (font) => {
+      const calculateTextProps = () => {
+        const firstKey = order[0]
+        const text = figma.createText()
+        text.fontName = font
+        node.appendChild(text)
+        text.characters = "Head " + firstKey[1]
+        text.name = text.characters
+        text.fontSize = Math.round(kHeight * multipliers[firstKey] * coeff)
+
+        const geometry = figma.flatten([text])
+        const { height } = geometry
+        const kDiff = kHeight / height
+        geometry.remove()
+        return kDiff
+      }
+
+      const kDiff = calculateTextProps()
+
       let offset = scaledMargin
+
       order.forEach((key) => {
         const text = figma.createText()
         text.fontName = font
@@ -158,7 +177,7 @@ figma.ui.onmessage = ({ type, count = 1.5, closest = "" }) => {
           text.name = text.characters
         }
 
-        const fontSize = Math.round(kHeight * multipliers[key] * coeff)
+        const fontSize = Math.round(kHeight * multipliers[key] * coeff * kDiff)
         text.fontSize = fontSize
         const lineHeight = findLineHeight(fontSize, baseHeight)
         text.lineHeight = {
