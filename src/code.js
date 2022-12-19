@@ -194,6 +194,7 @@ figma.ui.onmessage = ({ type, count = 1.5, closest = "" }) => {
         }
       })
       figma.closePlugin()
+    }
 
     figma
       .loadFontAsync(font)
