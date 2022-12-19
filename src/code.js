@@ -9,7 +9,7 @@ import {
 } from "./constants"
 import { closestFraction } from "./helpers"
 
-const { minBaseText, font } = defaultSettings
+const { minBaseText, font, defaultFont } = defaultSettings
 
 const findLineHeight = (fontSize, baseHeight) => {
   return baseHeight * Math.ceil(fontSize / baseHeight)
@@ -141,7 +141,7 @@ figma.ui.onmessage = ({ type, count = 1.5, closest = "" }) => {
     // calculate line height
     const baseHeight = Math.ceil(baseFontSize * lineHeightCoeff)
 
-    figma.loadFontAsync(font).then(() => {
+    const drawStuff = (font) => {
       let offset = scaledMargin
       order.forEach((key) => {
         const text = figma.createText()
@@ -194,7 +194,17 @@ figma.ui.onmessage = ({ type, count = 1.5, closest = "" }) => {
         }
       })
       figma.closePlugin()
-    })
+
+    figma
+      .loadFontAsync(font)
+      .then(() => {
+        drawStuff(font)
+      })
+      .catch(() => {
+        figma.loadFontAsync(defaultFont).then(() => {
+          drawStuff(defaultFont)
+        })
+      })
 
     figma.viewport.scrollAndZoomIntoView([node])
   } else if (type === "cancel") figma.closePlugin()

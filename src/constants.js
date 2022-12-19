@@ -17,6 +17,7 @@ export const lineHeightCoeff = 1.2
 export const defaultSettings = {
   minBaseText: 8,
   font: { family: "Kaspersky Sans Display", style: "Medium" },
+  defaultFont: { family: "Roboto", style: "Regular" },
 }
 
 export const order = ["h1", "h2", "h3", "h4", "teaser", "baseText"]
