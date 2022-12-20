@@ -143,18 +143,25 @@ figma.ui.onmessage = ({ type, count = 1.5, closest = "" }) => {
 
     const drawStuff = (font) => {
       const calculateTextProps = () => {
-        const firstKey = order[0]
-        const text = figma.createText()
+        let text = figma.createText()
         text.fontName = font
         node.appendChild(text)
-        text.characters = "Head " + firstKey[1]
-        text.name = text.characters
-        text.fontSize = Math.round(kHeight * multipliers[firstKey] * coeff)
+        text.characters = "H"
+        text.fontSize = kHeight * 10
 
         const geometry = figma.flatten([text])
         const { height } = geometry
-        const kDiff = kHeight / height
+        const kDiff = (kHeight * 10) / height
+        // console.log("kDiff", kDiff)
+        
         geometry.remove()
+
+        // text = figma.createText()
+        // text.fontName = font
+        // node.appendChild(text)
+        // text.characters = "H"
+        // text.fontSize = kHeight * kDiff
+
         return kDiff
       }
 
