@@ -17,7 +17,6 @@ module.exports = (env, argv) => ({
 
   module: {
     rules: [
-      // Converts TypeScript code to JavaScript
       {
         test: /\.(js|jsx)$/,
         loader: "babel-loader",
@@ -45,7 +44,7 @@ module.exports = (env, argv) => ({
   },
 
   // Webpack tries these extensions for you if you omit the extension like "import './file'"
-  resolve: { extensions: [".tsx", ".ts", ".jsx", ".js"] },
+  resolve: { extensions: [".jsx", ".js"] },
 
   output: {
     filename: "[name].js",
