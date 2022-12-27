@@ -139,7 +139,7 @@ figma.ui.onmessage = ({ type, count = 1.5, closest = "" }) => {
     )
 
     // calculate line height
-    const baseHeight = Math.ceil(baseFontSize * lineHeightCoeff)
+    
 
     const drawStuff = (font) => {
       const calculateTextProps = () => {
@@ -152,7 +152,6 @@ figma.ui.onmessage = ({ type, count = 1.5, closest = "" }) => {
         const geometry = figma.flatten([text])
         const { height } = geometry
         const kDiff = (kHeight * 10) / height
-        // console.log("kDiff", kDiff)
         
         geometry.remove()
 
@@ -166,6 +165,8 @@ figma.ui.onmessage = ({ type, count = 1.5, closest = "" }) => {
       }
 
       const kDiff = calculateTextProps()
+
+      const baseHeight = Math.ceil(baseFontSize * kDiff * lineHeightCoeff)
 
       let offset = scaledMargin
 
